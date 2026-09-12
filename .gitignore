@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# IntelliJ IDEA
+.idea/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Android
+.gradle/
+*.keystore
+*.jks
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
