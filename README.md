@@ -20,8 +20,6 @@
 - Expo
 - TypeScript
 - 本地优先的数据存储方案
-- IntelliJ IDEA 作为主要开发工具
-- Android Studio 用于 Android SDK、模拟器和原生构建
 
 ## 核心方向
 
@@ -35,17 +33,6 @@
 - 支持教室、老师等课程信息
 - 支持长文本备忘，并在主界面显示简短摘要
 - 本地离线优先，后续方便扩展提醒、导出和学期管理等功能
-
-## 开发环境
-
-- Windows 10/11
-- Node.js LTS
-- npm
-- Android Studio
-- Android SDK
-- Android Emulator 或 Android 真机
-- JDK 21，优先使用 Android Studio 自带的 Embedded JDK
-- IntelliJ IDEA
 
 ## 开始运行
 
