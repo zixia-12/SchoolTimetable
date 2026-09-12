@@ -5,6 +5,7 @@
 - The project is currently in an empty repository
 - The `Context/` folder should be maintained over time as new durable information appears
 - The local repository currently has no GitHub remote configured
+- A local-only `DEVELOPMENT.md` now stores recurring Windows, Expo, Android emulator, ADB, debugging, and Git commands
 
 ## Things to watch
 

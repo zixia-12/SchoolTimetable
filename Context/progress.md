@@ -8,6 +8,7 @@
 - The working repository is initialized for GitHub publishing
 - README has been translated to Chinese
 - The first local Git commit was created
+- A Git-ignored local development command reference has been added
 
 ## Confirmed decisions
 
