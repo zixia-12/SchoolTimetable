@@ -4,6 +4,7 @@
 
 - The project is currently in an empty repository
 - The `Context/` folder should be maintained over time as new durable information appears
+- The local repository currently has no GitHub remote configured
 
 ## Things to watch
 
