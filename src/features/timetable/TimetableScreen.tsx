@@ -21,7 +21,7 @@ import { Course, Weekday } from '@/types/timetable';
 
 const STORAGE_KEY = '@riyuebiao/courses-v2';
 const PERIODS_STORAGE_KEY = '@riyuebiao/period-times-v1';
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 const LATEST_RELEASE_URL = 'https://gitee.com/api/v5/repos/haozixia26/school-timetable/releases/latest';
 const PERIOD_HEIGHT = 82;
 const PERIOD_COLUMN_WIDTH = 52;

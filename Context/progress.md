@@ -33,14 +33,14 @@
 ## 当前产物
 
 - 应用名称：`日月表`
-- APK：`dist/日月表-1.0.0.apk`
+- APK：`dist/日月表-1.0.1.apk`
 - Android 包名：`com.daydayup.schooltimetable`
-- 当前版本：`1.0.0`，`versionCode` 为 `1`
+- 当前版本：`1.0.1`，`versionCode` 为 `2`
 
 ## 下一步
 
-- 为本轮课程表增强功能确定下一个版本号并构建发行版
+- 在 Gitee 创建 `v1.0.1` 发行版并手动上传 APK
 - 将后续代码继续同步到 Gitee 和 GitHub，APK 只发布到 Gitee
 - 支持按单双周或自选周数安排课程
 - 增加课程时间设置与冲突提示
-- 为后续版本建立版本号与 `versionCode` 同步更新流程
+- 后续版本继续同步更新版本号与 `versionCode`
