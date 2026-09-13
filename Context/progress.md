@@ -17,8 +17,9 @@
 
 ## 当前产物
 
-- APK：`dist/我的课表-1.0.0.apk`
-- Windows 下载目录副本：`C:/Users/34268/Downloads/我的课表-1.0.0.apk`
+- 应用名称：`日月表`
+- APK：`dist/日月表-1.0.0.apk`
+- Windows 下载目录副本：`C:/Users/34268/Downloads/日月表-1.0.0.apk`
 - Android 包名：`com.daydayup.schooltimetable`
 - 当前版本：`1.0.0`，`versionCode` 为 `1`
 
