@@ -366,7 +366,6 @@ export function TimetableScreen() {
           <Pressable style={[styles.menuPanel, { top: topInset + 68 }]} onPress={() => undefined}>
             <Pressable style={styles.menuItem} onPress={() => { setMenuOpen(false); addFromHeader(); }}>
               <Text style={styles.menuItemTitle}>添加课程</Text>
-              <Text style={styles.menuItemHint}>添加到今天的空闲节次</Text>
             </Pressable>
             <Pressable style={styles.menuItem} onPress={() => { setMenuOpen(false); setEditingPeriods(true); }}>
               <Text style={styles.menuItemTitle}>节次时间</Text>
