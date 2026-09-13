@@ -1,12 +1,14 @@
 export type Weekday = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
 
-export type MenuAction = 'time' | 'merge' | 'color' | 'info' | 'memo';
-
-export type ClassBlock = {
+export type Course = {
   id: string;
   title: string;
   color: string;
-  memoPreview?: string;
-  meta?: string[];
+  day: Weekday;
+  startPeriod: number;
+  duration: number;
+  weeks: number[];
+  room?: string;
+  teacher?: string;
+  note?: string;
 };
-

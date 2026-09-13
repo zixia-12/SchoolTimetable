@@ -4,17 +4,30 @@
     "slug": "school-timetable",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/splash-screen.jpg",
+          "imageWidth": 360,
+          "resizeMode": "contain"
+        }
+      ]
+    ],
     "android": {
       "package": "com.daydayup.schooltimetable",
       "adaptiveIcon": {
-        "backgroundColor": "#EAF2FF",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/app-icon.png"
       },
       "predictiveBackGestureEnabled": false
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#F3F5FB",
+      "barStyle": "dark-content"
     },
     "web": {
       "favicon": "./assets/favicon.png"

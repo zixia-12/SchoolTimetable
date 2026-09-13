@@ -31,7 +31,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
 }
 expoAutolinking.useExpoModules()
 
-rootProject.name = 'School Timetable'
+rootProject.name = '日月表'
 
 expoAutolinking.useExpoVersionCatalog()
 
