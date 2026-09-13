@@ -1,19 +1,15 @@
-# Context
+# 项目上下文
 
-This folder is the project's long-term memory.
+这个文件夹用于保存项目的长期信息，确保后续开发始终围绕已经确认的目标进行。
 
-Use it to keep the work on track as the app evolves.
+## 文件说明
 
-## Files
+- `project.md`：产品目标、当前范围和开发阶段
+- `preferences.md`：用户习惯、偏好和限制
+- `progress.md`：当前进度、已完成工作和下一步
+- `decisions.md`：已经确定的产品与技术决策
+- `notes.md`：暂时有用、以后需要整理的观察记录
 
-- `project.md`: what we are building and the current scope
-- `preferences.md`: the user's habits, preferences, and constraints
-- `progress.md`: current status, next steps, and completed work
-- `decisions.md`: settled technical choices and why they were made
-- `notes.md`: short-lived but useful observations to sort later
+## 维护规则
 
-## Maintenance rule
-
-When a conversation adds durable project knowledge, update the relevant file.
-If new information replaces old information, mark the old item as updated or retired.
-Keep this folder concise and useful, not chatty.
+对话中出现值得长期保留的信息时，应更新对应文件。新决定替代旧决定时，应明确更新或删除旧内容。内容保持简洁、准确，不记录无关的对话过程。

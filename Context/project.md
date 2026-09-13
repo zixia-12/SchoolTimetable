@@ -1,5 +1,18 @@
-## Development stage
+# 项目说明
 
-- The repository is now at the starter-skeleton stage
-- The next work should focus on real product structure, not throwaway scaffolding
+## 产品目标
 
+开发一个简洁、快速、以课程表为核心的 Android 应用。参考 Wakeup 课程表的主要功能和交互重新实现，不复制其代码或受版权保护的资源。
+
+## 当前范围
+
+- 一周七天课程网格
+- 默认每天最多 12 节：上午 5 节、下午 4 节、晚上 3 节
+- 周切换、今日高亮、课程详情和手动添加课程
+- 不加入广告、会员、社交和资讯功能
+- 优先本地使用，后续增加本地持久化
+- 通过 Gitee 发行版页面获取新版 APK
+
+## 当前阶段
+
+项目已经从骨架阶段进入可用模板阶段。课程表主界面和第一版 APK 已完成，下一阶段重点是完善编辑能力、保存数据和更新发布流程。

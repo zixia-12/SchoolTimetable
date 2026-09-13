@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "School Timetable",
+    "name": "我的课表",
     "slug": "school-timetable",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,4 +21,3 @@
     }
   }
 }
-

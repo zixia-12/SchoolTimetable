@@ -1,24 +1,28 @@
-# Decisions
+# 已确认决策
 
-## Technical choices
+## 技术决策
 
-- Frontend: `React Native`
-- App framework: `Expo`
-- Language: `TypeScript`
-- Main data storage: local-first
-- Main development tool: IntelliJ IDEA
+- 前端框架：`React Native` + `Expo`
+- 开发语言：`TypeScript`
+- 首要平台：Android
+- 数据策略：本地优先
+- 主要开发工具：IntelliJ IDEA
+- APK 更新渠道：Gitee 发行版
+- EAS Update：暂不启用，避免依赖国内可达性不稳定的服务
 
-## Product choices
+## 产品决策
 
-- Android first
-- iOS support later
-- Main timetable view must fit on one screen
-- No scroll wheel in the core UI
-- Keep the app minimal and quick to open
-- Repository should look and feel like a production-grade starter
+- 应用聚焦课程表，不扩展广告、会员、社交和资讯模块
+- 默认显示周一到周日
+- 默认 12 节课，分为上午 5 节、下午 4 节、晚上 3 节
+- 七天横向保持完整显示，节次通过纵向滚动查看
+- 当前日期高亮
+- 点击课程查看详情，点击空白格添加课程
+- 不提供没有实际功能的通用设置入口
+- 更新入口放在课程表底部，保持低干扰
 
-## Reasoning
+## 决策原因
 
-- These choices fit a student side project
-- They keep the codebase mainstream and easy to extend
-- They leave room for iOS without forcing it now
+- 这些选择适合个人课程表的高频查看场景
+- 保持技术栈主流，方便以后继续扩展和增加 iOS 支持
+- Gitee 比 GitHub 更适合作为国内手机的 APK 下载入口

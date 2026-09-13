@@ -1,29 +1,31 @@
-# Preferences
+# 用户偏好
 
-## Working style
+## 开发方式
 
-- Keep the app simple, fast, and easy to extend
-- Prefer stable, mainstream tooling
-- Avoid overengineering early
-- Use IntelliJ IDEA as the main development tool
+- 保持应用简单、快速、易扩展
+- 优先使用稳定、主流的工具
+- 早期避免过度设计
+- 主要使用 IntelliJ IDEA 开发
+- 项目文档和界面文字优先使用中文
 
-## Product preferences
+## 产品偏好
 
-- Android first
-- iOS can be added later
-- Main screen should fit on one page
-- Core experience should not depend on scrolling
-- Editing should happen through focused menus or sheets
+- Android 优先，iOS 以后再考虑
+- 主屏首先展示完整的一周课程概览
+- 12 节课程允许纵向滚动，不为了塞进一屏而过度压缩
+- 编辑操作使用聚焦的弹窗或底部面板
+- 不显示无实际用途的设置图标
+- 不加入广告、会员、社交或资讯功能
 
-## Technology preferences
+## 技术偏好
 
 - `React Native`
 - `Expo`
 - `TypeScript`
-- Prefer local storage before any cloud sync
+- 数据优先保存在本地
+- 完整 APK 更新优先使用国内较易访问的 Gitee
 
-## Constraints
+## 限制
 
-- No iOS device available for now
-- This is a personal practice project
-- The repository should stay formal enough for GitHub publication
+- 目前没有 iOS 设备
+- 这是个人练习项目，但代码仓库应保持适合公开发布的规范
