@@ -10,8 +10,11 @@
 
 ## 需要注意
 
-- EAS Update 可更新 JavaScript、样式和资源，但国内网络可达性不稳定，因此暂不作为主要更新方式
+- EAS Update 可更新 JavaScript、样式和普通资源；国内网络不可达时，应用会自动退回 Gitee 完整版检查
+- 当前 EAS 测试通道为 `preview`，运行时版本为 `1.0.1`
+- 发布测试热更新使用独立临时目录：`npx eas-cli update --channel preview --environment preview --input-dir .eas-update --message "更新说明"`
+- 旧本地 APK 与 EAS 云端签名不同，首次换用 EAS 基础版需要卸载旧 App；之后 EAS 构建会沿用同一云端签名
 - 新增原生依赖、修改权限或升级 Expo SDK 后，必须重新发布并安装 APK
 - Android 覆盖更新要求包名和签名保持一致，并提高 `versionCode`
-- 当前个人版 release APK 使用项目现有的固定调试签名；可持续覆盖安装，但正式上架前应迁移为专用发布签名
-- 课程表数据目前只保存在内存，关闭应用后新增课程会丢失
+- 后续用于 EAS 热更新的基础 APK 应继续使用 EAS 云端保存的固定签名
+- 课程和节次设置已使用 AsyncStorage 保存在本机

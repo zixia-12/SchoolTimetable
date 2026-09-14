@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Updates from 'expo-updates';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -43,7 +44,7 @@ type DraftCourse = {
   note: string;
 };
 
-type UpdateStatus = 'idle' | 'checking' | 'latest' | 'available' | 'error';
+type UpdateStatus = 'idle' | 'checking' | 'latest' | 'available' | 'ready' | 'error';
 
 function getWeekStart(offset: number) {
   const date = new Date();
@@ -84,6 +85,20 @@ function isNewerVersion(latest: string, current: string) {
     if (difference !== 0) return difference > 0;
   }
   return false;
+}
+
+function getOtaUpdateSummary(manifest: unknown) {
+  const updateManifest = manifest as {
+    extra?: {
+      updateNotes?: unknown;
+      expoClient?: { extra?: { updateNotes?: unknown } };
+    };
+  } | null;
+  const notes = updateManifest?.extra?.updateNotes
+    ?? updateManifest?.extra?.expoClient?.extra?.updateNotes;
+  return typeof notes === 'string' && notes.trim()
+    ? notes.trim().slice(0, 500)
+    : '功能更新已在后台下载完成。';
 }
 
 function addMinutes(time: string, minutes: number) {
@@ -204,8 +219,33 @@ export function TimetableScreen() {
 
   const checkForUpdates = async () => {
     if (updateStatus === 'checking') return;
+    if (updateStatus === 'ready') {
+      Alert.alert('功能更新已就绪', '现在重启即可应用更新。', [
+        { text: '稍后' },
+        { text: '立即重启', onPress: () => { void Updates.reloadAsync(); } }
+      ]);
+      return;
+    }
     setUpdateStatus('checking');
     try {
+      if (Updates.isEnabled) {
+        try {
+          const otaUpdate = await Updates.checkForUpdateAsync();
+          if (otaUpdate.isAvailable) {
+            const fetchedUpdate = await Updates.fetchUpdateAsync();
+            setUpdateStatus('ready');
+            setLatestVersion('功能更新');
+            Alert.alert('功能更新已就绪', getOtaUpdateSummary(fetchedUpdate.manifest), [
+              { text: '稍后' },
+              { text: '立即重启', onPress: () => { void Updates.reloadAsync(); } }
+            ]);
+            return;
+          }
+        } catch {
+          // 国内网络无法访问 EAS 时，继续使用 Gitee 检查完整 APK 更新。
+        }
+      }
+
       const response = await fetch(LATEST_RELEASE_URL, { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const release = await response.json() as { tag_name?: string; name?: string; body?: string };
@@ -267,6 +307,8 @@ export function TimetableScreen() {
       ? `已是最新版 · ${APP_VERSION}`
       : updateStatus === 'available'
         ? `发现新版本 · ${latestVersion}`
+        : updateStatus === 'ready'
+          ? '功能更新已下载，点击重启'
         : updateStatus === 'error'
           ? '检查失败，点击重试'
           : `当前版本 ${APP_VERSION}`;

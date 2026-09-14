@@ -29,17 +29,23 @@
 - 使用用户提供的 “Hello” 图片替换启动画面和 Android 应用图标
 - 引入 `expo-splash-screen` 并重新生成 Android 启动资源
 - 重新构建 release APK，并在 Pixel 10 模拟器安装运行
+- 修复 vivo 等厂商字体导致右上角三个点换行的问题
+- 创建并关联 EAS 项目 `@zixia-12/school-timetable`
+- 接入 `expo-updates`，配置 `preview` 热更新通道和运行时版本 `1.0.1`
+- EAS `preview` 基础 APK 已构建并安装到 Pixel 10
+- 第一条 EAS 测试更新已发布，已验证检查、下载、更新说明和立即重启流程
 
 ## 当前产物
 
 - 应用名称：`日月表`
-- APK：`dist/日月表-1.0.1.apk`
+- EAS 测试 APK：`dist/日月表-1.0.1-eas-preview.apk`
 - Android 包名：`com.daydayup.schooltimetable`
 - 当前版本：`1.0.1`，`versionCode` 为 `2`
 
 ## 下一步
 
 - 在 Gitee 创建 `v1.0.1` 发行版并手动上传 APK
+- 在真实 vivo 手机上测试 EAS 更新服务器的国内网络可达性
 - 将后续代码继续同步到 Gitee 和 GitHub，APK 只发布到 Gitee
 - 支持按单双周或自选周数安排课程
 - 增加课程时间设置与冲突提示

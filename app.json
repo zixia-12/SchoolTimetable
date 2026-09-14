@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
+    "runtimeVersion": "1.0.1",
     "plugins": [
       [
         "expo-splash-screen",
@@ -32,6 +33,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "updateNotes": "接入 EAS 热更新，并修复部分 vivo 手机上的更多按钮换行问题。",
+      "eas": {
+        "projectId": "d28c8a18-dfb9-4a4a-99eb-20b2a9e7a348"
+      }
+    },
+    "owner": "zixia-12",
+    "updates": {
+      "url": "https://u.expo.dev/d28c8a18-dfb9-4a4a-99eb-20b2a9e7a348"
     }
   }
 }
