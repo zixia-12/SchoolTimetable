@@ -280,7 +280,11 @@ export function TimetableScreen() {
           <Text style={styles.currentDate}>{formatDate(new Date())}</Text>
         </View>
         <Pressable accessibilityLabel="更多功能" onPress={() => setMenuOpen(true)} style={styles.moreButton}>
-          <Text style={styles.moreIcon}>•••</Text>
+          <View style={styles.moreIcon}>
+            <View style={styles.moreDot} />
+            <View style={styles.moreDot} />
+            <View style={styles.moreDot} />
+          </View>
         </Pressable>
       </View>
 
@@ -495,7 +499,8 @@ const styles = StyleSheet.create({
   weekTitle: { color: colors.text, fontSize: 25, fontWeight: '900' },
   currentDate: { color: colors.subtext, fontSize: 14, fontWeight: '700', marginTop: 2 },
   moreButton: { width: 52, height: 48, alignItems: 'center', justifyContent: 'center' },
-  moreIcon: { color: colors.text, fontSize: 22, fontWeight: '900', letterSpacing: 0 },
+  moreIcon: { width: 24, height: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  moreDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.text },
   weekBar: { height: 42, marginHorizontal: spacing.md, flexDirection: 'row', alignItems: 'center' },
   weekArrow: { width: 44, height: 42, alignItems: 'center', justifyContent: 'center' },
   arrow: { color: colors.text, fontSize: 28 },
