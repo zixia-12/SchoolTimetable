@@ -24,6 +24,15 @@
     "android": {
       "package": "com.daydayup.schooltimetable",
       "versionCode": 3,
+      "permissions": [
+        "REQUEST_INSTALL_PACKAGES"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/app-icon.png"

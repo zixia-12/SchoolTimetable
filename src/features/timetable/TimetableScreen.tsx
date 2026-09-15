@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { File } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
+import { getContentUriAsync } from 'expo-file-system/legacy';
+import * as IntentLauncher from 'expo-intent-launcher';
 import * as Updates from 'expo-updates';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -48,7 +50,19 @@ type DraftCourse = {
   note: string;
 };
 
-type UpdateStatus = 'idle' | 'checking' | 'latest' | 'available' | 'ready' | 'error';
+type UpdateStatus = 'idle' | 'checking' | 'downloading' | 'latest' | 'available' | 'ready' | 'error';
+
+type ReleaseAsset = {
+  name?: string;
+  browser_download_url?: string;
+};
+
+type AppRelease = {
+  tag_name?: string;
+  name?: string;
+  body?: string;
+  assets?: ReleaseAsset[];
+};
 
 function getWeekStart(offset: number) {
   const date = new Date();
@@ -170,6 +184,7 @@ export function TimetableScreen() {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [importing, setImporting] = useState(false);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
+  const [latestApkUrl, setLatestApkUrl] = useState<string | null>(null);
   const start = useMemo(() => getWeekStart(weekOffset), [weekOffset]);
   const weekNumber = CURRENT_WEEK + weekOffset;
   const todayIndex = (new Date().getDay() || 7) - 1;
@@ -368,13 +383,43 @@ export function TimetableScreen() {
     }
   };
 
+  const downloadAndInstallUpdate = async (version: string, apkUrl: string) => {
+    setUpdateStatus('downloading');
+    try {
+      const destination = new File(Paths.cache, `riyuebiao-${version}.apk`);
+      const apk = await File.downloadFileAsync(apkUrl, destination, { idempotent: true });
+      const contentUri = await getContentUriAsync(apk.uri);
+      setUpdateStatus('available');
+      await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+        data: contentUri,
+        flags: 1,
+        type: 'application/vnd.android.package-archive'
+      });
+    } catch (error) {
+      console.warn('Unable to download or open the app update', error);
+      setUpdateStatus('error');
+      Alert.alert('更新失败', '更新下载失败，请稍后重试。', [{ text: '知道了' }]);
+    }
+  };
+
+  const showAppUpdate = (version: string, summary: string, apkUrl: string) => {
+    Alert.alert(`发现新版本 ${version}`, summary, [
+      { text: '稍后', style: 'cancel' },
+      { text: '下载并安装', onPress: () => { void downloadAndInstallUpdate(version, apkUrl); } }
+    ]);
+  };
+
   const checkForUpdates = async () => {
-    if (updateStatus === 'checking') return;
+    if (updateStatus === 'checking' || updateStatus === 'downloading') return;
     if (updateStatus === 'ready') {
       Alert.alert('功能更新已就绪', '现在重启即可应用更新。', [
         { text: '稍后' },
         { text: '立即重启', onPress: () => { void Updates.reloadAsync(); } }
       ]);
+      return;
+    }
+    if (updateStatus === 'available' && latestVersion && latestApkUrl) {
+      showAppUpdate(latestVersion, '新版本已经可以安装。', latestApkUrl);
       return;
     }
     setUpdateStatus('checking');
@@ -392,32 +437,37 @@ export function TimetableScreen() {
             ]);
             return;
           }
-        } catch {
-          // 国内网络无法访问 EAS 时，继续使用 Gitee 检查完整 APK 更新。
+        } catch (error) {
+          console.warn('Unable to check or download the OTA update', error);
         }
       }
 
       const response = await fetch(LATEST_RELEASE_URL, { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const release = await response.json() as { tag_name?: string; name?: string; body?: string };
+      const release = await response.json() as AppRelease;
       const version = release.tag_name || release.name;
       if (!version) throw new Error('Missing release version');
       const normalized = version.replace(/^v/i, '');
       setLatestVersion(normalized);
       if (isNewerVersion(normalized, APP_VERSION)) {
+        const apkUrl = release.assets?.find((asset) => asset.name?.toLowerCase().endsWith('.apk'))?.browser_download_url;
+        if (!apkUrl) throw new Error('Missing APK asset');
+        setLatestApkUrl(apkUrl);
         setUpdateStatus('available');
         const summary = release.body?.trim()
           .replace(/^#+\s*/gm, '')
           .replace(/^[-*]\s+/gm, '• ')
           .slice(0, 500) || '新版本已经发布。';
-        Alert.alert(`发现新版本 ${normalized}`, summary, [{ text: '知道了' }]);
+        showAppUpdate(normalized, summary, apkUrl);
       } else {
+        setLatestApkUrl(null);
         setUpdateStatus('latest');
         Alert.alert('已是最新版', `当前版本为 ${APP_VERSION}`, [{ text: '知道了' }]);
       }
-    } catch {
+    } catch (error) {
+      console.warn('Unable to check for app updates', error);
       setUpdateStatus('error');
-      Alert.alert('检查更新失败', '暂时无法连接 Gitee，请稍后重试。', [{ text: '知道了' }]);
+      Alert.alert('检查更新失败', '暂时无法检查更新，请稍后重试。', [{ text: '知道了' }]);
     }
   };
 
@@ -454,6 +504,8 @@ export function TimetableScreen() {
 
   const updateLabel = updateStatus === 'checking'
     ? '正在后台检查…'
+    : updateStatus === 'downloading'
+      ? '正在下载更新…'
     : updateStatus === 'latest'
       ? `已是最新版 · ${APP_VERSION}`
       : updateStatus === 'available'
@@ -588,7 +640,7 @@ export function TimetableScreen() {
               <Text style={styles.menuItemHint}>{importing ? '正在读取文件…' : '选择学校导出的 .xls 文件'}</Text>
             </Pressable>
             <Pressable
-              disabled={updateStatus === 'checking'}
+              disabled={updateStatus === 'checking' || updateStatus === 'downloading'}
               style={[styles.menuItem, styles.lastMenuItem]}
               onPress={() => { setMenuOpen(false); void checkForUpdates(); }}
             >
