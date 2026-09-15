@@ -2,11 +2,14 @@
   "expo": {
     "name": "日月表",
     "slug": "school-timetable",
-    "version": "1.0.1",
+    "version": "1.0.2",
+    "platforms": [
+      "android"
+    ],
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
-    "runtimeVersion": "1.0.1",
+    "runtimeVersion": "1.0.2",
     "plugins": [
       [
         "expo-splash-screen",
@@ -20,7 +23,7 @@
     ],
     "android": {
       "package": "com.daydayup.schooltimetable",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/app-icon.png"
@@ -35,7 +38,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "updateNotes": "接入 EAS 热更新，并修复部分 vivo 手机上的更多按钮换行问题。",
+      "updateNotes": "新增学校课表一键导入，优化课程高度、作息时间和通识课备注，并改进教室地点显示。",
       "eas": {
         "projectId": "d28c8a18-dfb9-4a4a-99eb-20b2a9e7a348"
       }

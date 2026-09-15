@@ -12,3 +12,12 @@ export type Course = {
   teacher?: string;
   note?: string;
 };
+
+export type GeneralCourse = {
+  id: string;
+  title: string;
+  weeks: number[];
+  courseCode?: string;
+  section?: string;
+  teacher?: string;
+};

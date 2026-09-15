@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { File } from 'expo-file-system';
 import * as Updates from 'expo-updates';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -16,15 +17,17 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { courseColors, defaultPeriodTimes, PeriodTime, weekdays } from '@/features/timetable/defaultSchedule';
+import { courseColors, defaultPeriodTimes, PeriodTime, previousDefaultPeriodTimes, weekdays } from '@/features/timetable/defaultSchedule';
+import { cleanImportedRoom, ImportedCourse, ImportedGeneralCourse, parseSchoolTimetable } from '@/features/timetable/schoolTimetableImporter';
 import { colors, radius, spacing } from '@/theme/tokens';
-import { Course, Weekday } from '@/types/timetable';
+import { Course, GeneralCourse, Weekday } from '@/types/timetable';
 
 const STORAGE_KEY = '@riyuebiao/courses-v2';
 const PERIODS_STORAGE_KEY = '@riyuebiao/period-times-v1';
-const APP_VERSION = '1.0.1';
+const GENERAL_COURSES_STORAGE_KEY = '@riyuebiao/general-courses-v1';
+const APP_VERSION = '1.0.2';
 const LATEST_RELEASE_URL = 'https://gitee.com/api/v5/repos/haozixia26/school-timetable/releases/latest';
-const PERIOD_HEIGHT = 82;
+const PERIOD_HEIGHT = 64;
 const PERIOD_COLUMN_WIDTH = 52;
 const CURRENT_WEEK = 2;
 
@@ -39,6 +42,7 @@ type DraftCourse = {
   day: Weekday;
   startPeriod: number;
   duration: number;
+  weeks: number[];
   room: string;
   teacher: string;
   note: string;
@@ -66,6 +70,7 @@ function createDraft(day: Weekday, period: number, periodCount: number, course?:
     day: course?.day ?? day,
     startPeriod: course?.startPeriod ?? period,
     duration: course?.duration ?? Math.min(2, periodCount - period),
+    weeks: course?.weeks ?? Array.from({ length: 20 }, (_, index) => index + 1),
     room: course?.room ?? '',
     teacher: course?.teacher ?? '',
     note: course?.note ?? ''
@@ -107,11 +112,53 @@ function addMinutes(time: string, minutes: number) {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
+function formatWeeks(weeks: number[]) {
+  if (weeks.length === 0) return '未设置周次';
+  const ranges: string[] = [];
+  let start = weeks[0];
+  let end = weeks[0];
+  for (const week of weeks.slice(1)) {
+    if (week === end + 1) {
+      end = week;
+    } else {
+      ranges.push(start === end ? `${start}` : `${start}-${end}`);
+      start = week;
+      end = week;
+    }
+  }
+  ranges.push(start === end ? `${start}` : `${start}-${end}`);
+  return `第${ranges.join('、')}周`;
+}
+
+function courseIdentity(course: ImportedCourse | Course) {
+  return [
+    course.title, course.day, course.startPeriod, course.duration,
+    course.weeks.join(','), course.room ?? '', course.teacher ?? ''
+  ].join('|');
+}
+
+function generalCourseIdentity(course: ImportedGeneralCourse | GeneralCourse) {
+  return [course.courseCode ?? '', course.title, course.section ?? '', course.weeks.join(','), course.teacher ?? ''].join('|');
+}
+
+function periodTimesEqual(left: PeriodTime[], right: PeriodTime[]) {
+  return left.length === right.length
+    && left.every((time, index) => time[0] === right[index][0] && time[1] === right[index][1]);
+}
+
+function formatGeneralCourse(course: GeneralCourse) {
+  const code = course.courseCode ? `[${course.courseCode}]` : '';
+  const section = course.section ? `(${course.section})` : '';
+  const teacher = course.teacher ? ` ${course.teacher}` : '';
+  return `${code}${course.title}${section} ${formatWeeks(course.weeks)}${teacher}`;
+}
+
 export function TimetableScreen() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [weekOffset, setWeekOffset] = useState(0);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [generalCourses, setGeneralCourses] = useState<GeneralCourse[]>([]);
   const [periodTimes, setPeriodTimes] = useState<PeriodTime[]>(defaultPeriodTimes);
   const [selected, setSelected] = useState<Course | null>(null);
   const [draft, setDraft] = useState<DraftCourse | null>(null);
@@ -119,7 +166,9 @@ export function TimetableScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [periodsHydrated, setPeriodsHydrated] = useState(false);
+  const [generalCoursesHydrated, setGeneralCoursesHydrated] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
+  const [importing, setImporting] = useState(false);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const start = useMemo(() => getWeekStart(weekOffset), [weekOffset]);
   const weekNumber = CURRENT_WEEK + weekOffset;
@@ -130,7 +179,10 @@ export function TimetableScreen() {
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
-      .then((stored) => stored && setCourses(JSON.parse(stored) as Course[]))
+      .then((stored) => stored && setCourses((JSON.parse(stored) as Course[]).map((course) => ({
+        ...course,
+        room: cleanImportedRoom(course.room)
+      }))))
       .catch(() => undefined)
       .finally(() => setHydrated(true));
   }, []);
@@ -141,7 +193,11 @@ export function TimetableScreen() {
 
   useEffect(() => {
     AsyncStorage.getItem(PERIODS_STORAGE_KEY)
-      .then((stored) => stored && setPeriodTimes(JSON.parse(stored) as PeriodTime[]))
+      .then((stored) => {
+        if (!stored) return;
+        const saved = JSON.parse(stored) as PeriodTime[];
+        setPeriodTimes(periodTimesEqual(saved, previousDefaultPeriodTimes) ? defaultPeriodTimes : saved);
+      })
       .catch(() => undefined)
       .finally(() => setPeriodsHydrated(true));
   }, []);
@@ -149,6 +205,19 @@ export function TimetableScreen() {
   useEffect(() => {
     if (periodsHydrated) AsyncStorage.setItem(PERIODS_STORAGE_KEY, JSON.stringify(periodTimes)).catch(() => undefined);
   }, [periodTimes, periodsHydrated]);
+
+  useEffect(() => {
+    AsyncStorage.getItem(GENERAL_COURSES_STORAGE_KEY)
+      .then((stored) => stored && setGeneralCourses(JSON.parse(stored) as GeneralCourse[]))
+      .catch(() => undefined)
+      .finally(() => setGeneralCoursesHydrated(true));
+  }, []);
+
+  useEffect(() => {
+    if (generalCoursesHydrated) {
+      AsyncStorage.setItem(GENERAL_COURSES_STORAGE_KEY, JSON.stringify(generalCourses)).catch(() => undefined);
+    }
+  }, [generalCourses, generalCoursesHydrated]);
 
   const changeWeek = (delta: number) => {
     setWeekOffset((current) => Math.max(1 - CURRENT_WEEK, Math.min(20 - CURRENT_WEEK, current + delta)));
@@ -175,8 +244,8 @@ export function TimetableScreen() {
       day: draft.day,
       startPeriod: draft.startPeriod,
       duration: Math.min(draft.duration, periodTimes.length - draft.startPeriod),
-      weeks: Array.from({ length: 20 }, (_, index) => index + 1),
-      room: draft.room.trim() || undefined,
+      weeks: draft.weeks,
+      room: cleanImportedRoom(draft.room),
       teacher: draft.teacher.trim() || undefined,
       note: draft.note.trim() || undefined
     };
@@ -215,6 +284,88 @@ export function TimetableScreen() {
       Array.from({ length: course.duration }, (_, index) => course.startPeriod + index)));
     const period = periodTimes.findIndex((_, index) => !occupied.has(index));
     openAdd(day, Math.max(0, period));
+  };
+
+  const extendPeriodTimes = (requiredCount: number) => {
+    setPeriodTimes((current) => {
+      if (current.length >= requiredCount) return current;
+      const next = [...current];
+      while (next.length < requiredCount) {
+        const preset = defaultPeriodTimes[next.length];
+        if (preset) {
+          next.push([...preset]);
+        } else {
+          const previousEnd = next.at(-1)?.[1] ?? '08:00';
+          const begin = addMinutes(previousEnd, 10);
+          next.push([begin, addMinutes(begin, 50)]);
+        }
+      }
+      return next;
+    });
+  };
+
+  const importSchoolTimetable = async () => {
+    if (importing) return;
+    setImporting(true);
+    try {
+      const selection = await File.pickFileAsync({
+        mimeTypes: ['application/vnd.ms-excel', 'text/html', 'application/octet-stream']
+      });
+      if (selection.canceled) return;
+      const selectedFile = selection.result;
+      const result = parseSchoolTimetable(await selectedFile.bytes());
+      const stamp = Date.now();
+      const imported: Course[] = result.courses.map((course, index) => ({
+        ...course,
+        id: `school-import-${stamp}-${index}`,
+        color: courseColors[index % courseColors.length]
+      }));
+      const importedGeneralCourses: GeneralCourse[] = result.generalCourses.map((course, index) => ({
+        ...course,
+        id: `school-general-import-${stamp}-${index}`
+      }));
+      const weeks = imported.flatMap((course) => course.weeks);
+      const weekSummary = formatWeeks([...new Set(weeks)].sort((left, right) => left - right));
+      const generalMessage = importedGeneralCourses.length > 0
+        ? `\n另有 ${importedGeneralCourses.length} 门无固定时间课程，将显示在课表底部备注中。`
+        : '';
+      const requiredPeriods = Math.max(...imported.map((course) => course.startPeriod + course.duration));
+
+      const finishImport = (mode: 'replace' | 'merge') => {
+        let nextCourses = imported;
+        if (mode === 'merge') {
+          const existing = new Set(courses.map(courseIdentity));
+          nextCourses = [...courses, ...imported.filter((course) => !existing.has(courseIdentity(course)))];
+          const existingGeneral = new Set(generalCourses.map(generalCourseIdentity));
+          setGeneralCourses([
+            ...generalCourses,
+            ...importedGeneralCourses.filter((course) => !existingGeneral.has(generalCourseIdentity(course)))
+          ]);
+        } else {
+          setGeneralCourses(importedGeneralCourses);
+        }
+        setCourses(nextCourses);
+        extendPeriodTimes(requiredPeriods);
+        Alert.alert('导入完成', mode === 'replace'
+          ? `已导入 ${imported.length} 门课程。`
+          : `课表合并完成，当前共 ${nextCourses.length} 门课程。`);
+      };
+
+      Alert.alert(
+        `识别到 ${imported.length} 门课程`,
+        `${weekSummary}，最多到第 ${requiredPeriods} 节。${generalMessage}\n\n请选择导入方式。`,
+        [
+          { text: '取消', style: 'cancel' },
+          { text: '合并导入', onPress: () => finishImport('merge') },
+          { text: '覆盖当前课表', style: 'destructive', onPress: () => finishImport('replace') }
+        ]
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '文件格式无法识别';
+      Alert.alert('导入失败', message);
+    } finally {
+      setImporting(false);
+    }
   };
 
   const checkForUpdates = async () => {
@@ -398,12 +549,23 @@ export function TimetableScreen() {
                   }
                 ]}
               >
-                <Text numberOfLines={3} style={styles.courseTitle}>{course.title}</Text>
-                <Text numberOfLines={2} style={styles.courseMeta}>{course.room}</Text>
+                <Text numberOfLines={4} style={styles.courseTitle}>{course.title}</Text>
+                {!!course.room && <Text numberOfLines={3} style={styles.courseMeta}>@{course.room}</Text>}
               </Pressable>
             );
           })}
         </View>
+
+        {generalCourses.length > 0 && (
+          <View style={[styles.generalNotes, { width: tableWidth }]}>
+            <Text style={styles.generalNotesTitle}>备注：</Text>
+            {generalCourses.map((course, index) => (
+              <Text key={course.id} style={styles.generalNoteText}>
+                {index + 1}、{formatGeneralCourse(course)}
+              </Text>
+            ))}
+          </View>
+        )}
 
       </ScrollView>
 
@@ -416,6 +578,14 @@ export function TimetableScreen() {
             <Pressable style={styles.menuItem} onPress={() => { setMenuOpen(false); setEditingPeriods(true); }}>
               <Text style={styles.menuItemTitle}>节次时间</Text>
               <Text style={styles.menuItemHint}>当前每天 {periodTimes.length} 节课</Text>
+            </Pressable>
+            <Pressable
+              disabled={importing}
+              style={styles.menuItem}
+              onPress={() => { setMenuOpen(false); void importSchoolTimetable(); }}
+            >
+              <Text style={styles.menuItemTitle}>导入课表</Text>
+              <Text style={styles.menuItemHint}>{importing ? '正在读取文件…' : '选择学校导出的 .xls 文件'}</Text>
             </Pressable>
             <Pressable
               disabled={updateStatus === 'checking'}
@@ -438,7 +608,7 @@ export function TimetableScreen() {
               <Text style={styles.detailTitle}>{selected?.title}</Text>
             </View>
             <View style={styles.detailRows}>
-              <Text style={styles.detailText}>第1 - 20周</Text>
+              <Text style={styles.detailText}>{selected ? formatWeeks(selected.weeks) : ''}</Text>
               <Text style={styles.detailText}>周{selected ? dayNames[selected.day] : ''}  第{(selected?.startPeriod ?? 0) + 1} - {(selected?.startPeriod ?? 0) + (selected?.duration ?? 1)}节</Text>
               {!!selected?.room && <Text style={styles.detailText}>教室  {selected.room}</Text>}
               {!!selected?.teacher && <Text style={styles.detailText}>老师  {selected.teacher}</Text>}
@@ -568,8 +738,11 @@ const styles = StyleSheet.create({
   periodTime: { color: '#7D8594', fontSize: 10, lineHeight: 14 },
   emptySlot: { height: PERIOD_HEIGHT, borderLeftWidth: 1, borderLeftColor: '#E5E8F0' },
   courseBlock: { position: 'absolute', zIndex: 2, borderRadius: 7, padding: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.75)' },
-  courseTitle: { color: '#FFFFFF', fontSize: 11, lineHeight: 14, fontWeight: '900', textAlign: 'center' },
-  courseMeta: { color: 'rgba(255,255,255,0.92)', fontSize: 9, lineHeight: 12, marginTop: 4, textAlign: 'center' },
+  courseTitle: { color: '#FFFFFF', fontFamily: 'sans-serif', fontSize: 10, lineHeight: 13, fontWeight: 'normal', textAlign: 'center' },
+  courseMeta: { color: 'rgba(255,255,255,0.92)', fontSize: 9, lineHeight: 11, marginTop: 2, textAlign: 'center' },
+  generalNotes: { alignSelf: 'center', borderTopWidth: 1, borderTopColor: '#D9DEE8', paddingHorizontal: spacing.sm, paddingVertical: spacing.md },
+  generalNotesTitle: { color: colors.text, fontSize: 13, fontWeight: '700', marginBottom: spacing.xs },
+  generalNoteText: { color: colors.subtext, fontSize: 12, lineHeight: 19, marginBottom: 3 },
   menuBackdrop: { flex: 1, backgroundColor: 'rgba(16,24,40,0.12)' },
   menuPanel: { position: 'absolute', right: spacing.md, width: 240, backgroundColor: '#FFFFFF', borderRadius: radius.sm, paddingHorizontal: spacing.md, shadowColor: '#101828', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
   menuItem: { minHeight: 68, justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: '#EAECF0' },
