@@ -51,7 +51,7 @@
 
 ## 下一步
 
-- 在 Gitee 和 GitHub 创建 `v1.0.2` 发行版并上传 APK
+- 在 Gitee 创建 `v1.0.2` 发行版并上传 APK；GitHub 只同步源码和标签
 - 在真实 vivo 手机上测试 EAS 更新服务器的国内网络可达性
 - 将后续代码继续同步到 Gitee 和 GitHub，APK 只发布到 Gitee
 - 支持按单双周或自选周数安排课程
