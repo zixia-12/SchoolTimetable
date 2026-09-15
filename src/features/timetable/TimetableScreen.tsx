@@ -550,7 +550,7 @@ export function TimetableScreen() {
                 ]}
               >
                 <Text numberOfLines={4} style={styles.courseTitle}>{course.title}</Text>
-                {!!course.room && <Text numberOfLines={3} style={styles.courseMeta}>@{course.room}</Text>}
+                {!!course.room && <Text numberOfLines={3} style={styles.courseMeta}>@[{course.room}]</Text>}
               </Pressable>
             );
           })}
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
   periodTime: { color: '#7D8594', fontSize: 10, lineHeight: 14 },
   emptySlot: { height: PERIOD_HEIGHT, borderLeftWidth: 1, borderLeftColor: '#E5E8F0' },
   courseBlock: { position: 'absolute', zIndex: 2, borderRadius: 7, padding: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.75)' },
-  courseTitle: { color: '#FFFFFF', fontFamily: 'sans-serif', fontSize: 10, lineHeight: 13, fontWeight: 'normal', textAlign: 'center' },
+  courseTitle: { color: '#FFFFFF', fontFamily: 'sans-serif', fontSize: 10, lineHeight: 13, fontWeight: '700', textAlign: 'center' },
   courseMeta: { color: 'rgba(255,255,255,0.92)', fontSize: 9, lineHeight: 11, marginTop: 2, textAlign: 'center' },
   generalNotes: { alignSelf: 'center', borderTopWidth: 1, borderTopColor: '#D9DEE8', paddingHorizontal: spacing.sm, paddingVertical: spacing.md },
   generalNotesTitle: { color: colors.text, fontSize: 13, fontWeight: '700', marginBottom: spacing.xs },
